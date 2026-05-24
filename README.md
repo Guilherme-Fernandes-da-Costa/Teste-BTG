@@ -5,13 +5,23 @@ seletivo para posição Estiário(a) de Software .NET/Java | BTG Empresas no BTG
 \
 *Requisitos*
  link de acesso aos requisitos: [aqui](https://gist.github.com/DouglasLutz/aa25728e3a438dc966490870f03cc770/)
-\
-*Link de referencias*
+
+*Decisões de projetos:*
+
+- Modelo MER:<br>
+- Os dados seram armazenados em memória cash
+- bibliotecas usadas:
+    - 
+    -
+    -
+    -
+    -
+
+*Link de referencias*<br>
  abaixo estão os link dos locais onde tirei informação para o desenvolvimento desse desafio:
 - link 1
 - link 2
 - link 3
-- link 4
-
+- link 4   
 
 
