@@ -19,7 +19,7 @@ public class VacinacaoController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Vacinacao>> RegistrarVacinacao(Vacinacao Vacinacao)
     {
-        var pessoaExistente = await _context.Pessoas.AnyAsync(p => p.Id == Vacinacao.IdPessoa);
+        var pessoaExistente = await _context.Pessoas.AnyAsync(p => p.IdPessoa == Vacinacao.IdPessoa);
         if (!pessoaExistente)
         {
             return BadRequest("Pessoa não encontrada");
@@ -31,7 +31,7 @@ public class VacinacaoController : ControllerBase
             return BadRequest("Vacina não encontrada");
         }
 
-        var doseDuplicada = await _context.Vacinassoes
+        var doseDuplicada = await _context.Vacinacoes
             .AnyAsync(c => c.IdPessoa == Vacinacao.IdPessoa && c.IdVacina == Vacinacao.IdVacina && c.Dose == Vacinacao.Dose);
 
         if (doseDuplicada)
@@ -39,7 +39,7 @@ public class VacinacaoController : ControllerBase
             return BadRequest("Dose já registrada para esta pessoa e vacina");
         }
 
-        _context.Vacinassoes.Add(Vacinacao);
+        _context.Vacinacoes.Add(Vacinacao);
         await _context.SaveChangesAsync();
 
         return Ok(Vacinacao);

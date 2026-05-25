@@ -24,7 +24,7 @@ public class PessoaController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Pessoa>> CadastrarPessoa(Pessoa pessoa)
     {
-        var jaExistente = await _context.Pessoas.AnyAsync(p => p.Id == pessoa.Id);
+        var jaExistente = await _context.Pessoas.AnyAsync(p => p.IdPessoa == pessoa.IdPessoa);
         if (jaExistente)
         {
             return BadRequest("Pessoa já cadastrada");
@@ -33,18 +33,18 @@ public class PessoaController : ControllerBase
         _context.Pessoas.Add(pessoa);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetPessoas), new { id = pessoa.Id }, pessoa);
+        return CreatedAtAction(nameof(GetPessoas), new { id = pessoa.IdPessoa }, pessoa);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> RemoverPessoa(int id)
     {
-        var pessoa = await _context.Pessoas.Include(p => p.Vacinassoes).FirstOrDefaultAsync(p => p.Id == id);
+        var pessoa = await _context.Pessoas.Include(p => p.Vacinacoes).FirstOrDefaultAsync(p => p.IdPessoa == id);
         if (pessoa == null)
         {
             return NotFound("Pessoa não encontrada");
         }
-        _context.Vacinassoes.RemoveRange(pessoa.Vacinassoes);
+        _context.Vacinacoes.RemoveRange(pessoa.Vacinacoes);
         _context.Pessoas.Remove(pessoa);
 
         await _context.SaveChangesAsync();

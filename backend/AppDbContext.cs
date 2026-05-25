@@ -11,14 +11,14 @@ public class AppDbContext : DbContext
 
     public DbSet<Pessoa> Pessoas { get; set; }
     public DbSet<Vacina> Vacinas { get; set; }
-    public DbSet<Vacinacao> Vacinassoes { get; set; }
+    public DbSet<Vacinacao> Vacinacoes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Pessoa>()
-            .HasIndex(p => p.Id)
+            .HasIndex(p => p.IdPessoa)
             .IsUnique();
     }
 }
