@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Pessoa, PessoaService } from './services/pessoa';
@@ -18,12 +18,13 @@ export class App implements OnInit {
   vacinas: Vacina[] = [];
   vacinacoesPessoa: Vacinacao[] = [];
 
+
   // Modelos de Cadastro Auxiliares
   novaPessoa: Pessoa = { nomePessoa: '', numeroIdentificacao: '' };
   novaVacina: Vacina = { nomeVacina: '' };
   registrarDose = { vacinaId: 0, doseNome: '' };
 
-  pessoaSelecionada?: Pessoa;
+  pessoaSelecionada: any = null;
 
   listaDoses: string[] = [
     'Tipo 1ª Dose',
@@ -36,10 +37,11 @@ export class App implements OnInit {
   constructor(
     private pessoaService: PessoaService,
     private vacinaService: VacinaService,
-    private vacinacaoService: VacinacaoService
+    private vacinacaoService: VacinacaoService,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit(){
     this.carregarDados();
   }
 
@@ -49,13 +51,21 @@ export class App implements OnInit {
   }
 
   cadastrarPessoa() {
-    if (!this.novaPessoa.nomePessoa || !this.novaPessoa.numeroIdentificacao) return;
-    
+    if (!this.novaPessoa.nomePessoa){
+      alert('O nome do paciente é obrigatório.');
+      return;
+    }
+
     this.novaPessoa.idPessoa = Math.floor(Math.random() * 1000000) + 1; 
     
-    this.pessoaService.cadastrarPessoa(this.novaPessoa).subscribe(() => {
-      this.novaPessoa = { nomePessoa: '', numeroIdentificacao: '' };
-      this.carregarDados();
+    this.pessoaService.cadastrarPessoa(this.novaPessoa).subscribe({
+      next: () => {
+        this.novaPessoa = { nomePessoa: '', numeroIdentificacao: '' };
+        
+        this.carregarDados();
+        alert("Paciente cadastrado com sucesso!");
+      },
+      error: (err) => alert("Erro ao cadastrar pessoa.")
     });
   }
 
@@ -64,18 +74,27 @@ export class App implements OnInit {
 
     this.novaVacina.idVacina = Math.floor(Math.random() * 1000000) + 1;
 
-    this.vacinaService.cadastrarVacina(this.novaVacina).subscribe(() => {
-      this.novaVacina = { nomeVacina: '' };
-      this.carregarDados();
+    this.vacinaService.cadastrarVacina(this.novaVacina).subscribe({
+      next: () => {
+        this.novaVacina = { nomeVacina: '' };
+        
+        this.carregarDados();
+        alert("Vacina adicionada ao catálogo com sucesso!");
+      },
+      error: (err) => alert("Erro ao cadastrar vacina.")
     });
   }
 
   selecionarPessoa(pessoa: Pessoa) {
+    if(!pessoa) return;
     this.pessoaSelecionada = pessoa;
+    // this.historicoVacinacao = [];
     this.carregarCartao(pessoa.idPessoa || 0);
   }
 
   carregarCartao(pessoaId: number) {
+    if(!pessoaId) return;
+
     this.vacinacaoService.consultarCartao(pessoaId).subscribe(res => this.vacinacoesPessoa = res);
   }
 
@@ -96,9 +115,10 @@ export class App implements OnInit {
     if (!this.pessoaSelecionada) return;
     
     const DTO: Vacinacao = {
+      id: 0,
       pessoaId: this.pessoaSelecionada.idPessoa || 0,
       vacinaId: vacinaId,
-      dose: doseNome
+      dose: doseNome.trim()
     };
 
     this.vacinacaoService.registrarVacinacao(DTO).subscribe({
@@ -111,6 +131,18 @@ export class App implements OnInit {
     if (confirm('Deseja remover o registro desta dose?')) {
       this.vacinacaoService.excluirRegistro(idLog).subscribe(() => {
         this.carregarCartao(this.pessoaSelecionada!.idPessoa || 0);
+      });
+    }
+  }
+  removerPacienteAtual(){
+    if (!this.pessoaSelecionada) return;
+
+    if (confirm(`Deseja remover o paciente ${this.pessoaSelecionada.nomePessoa}?`)) {
+      this.pessoaService.removerPessoa(this.pessoaSelecionada.idPessoa || 0).subscribe(() => {
+        this.pessoaSelecionada = undefined;
+        this.vacinacoesPessoa = [];
+        this.carregarDados();
+        this.cdr.detectChanges();
       });
     }
   }

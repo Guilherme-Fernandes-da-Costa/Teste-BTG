@@ -3,21 +3,31 @@
   <div style="display: flex; gap: 20px; margin-bottom: 20px;">
     <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #ccc; flex: 1;">
       <h4 style="margin-top:0;">👥 Selecione o Paciente</h4>
-      <select style="width: 100%; padding: 8px;" (change)="selecionarPessoa(pessoas[mySelect.selectedIndex - 1])" #mySelect>
-        <option disabled selected>-- Escolha uma Pessoa --</option>
-        <option *ngFor="let p of pessoas">{{ p.nomePessoa }} (ID: {{ p.numeroIdentificacao }})</option>
-      </select>
+      <div style="display: flex; gap: 10px;">
+        <select style="flex: 1; padding: 8px;" [(ngModel)]="pessoaSelecionada" (ngModelChange)="selecionarPessoa($event)">
+          <option [ngValue]="null" disabled selected>-- Escolha uma Pessoa --</option>
+          <option *ngFor="let p of pessoas" [ngValue]="p">
+            {{ p.nomePessoa }} (ID: {{ p.numeroIdentificacao }})
+          </option>
+        </select>
+        <button *ngIf="pessoaSelecionada" (click)="removerPacienteAtual()" 
+                style="background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;"
+                title="Remover este paciente do sistema completamente">
+          🗑️ Excluir Paciente
+        </button>
+      </div>
     </div>
 
     <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #ccc; flex: 1;">
       <h4 style="margin-top:0;">➕ Cadastros Rápidos</h4>
-      <div style="display: flex; gap: 10px;">
-        <input [(ngModel)]="novaPessoa.nomePessoa" placeholder="Nome" style="padding: 5px; width: 30%;">
-        <input [(ngModel)]="novaPessoa.numeroIdentificacao" placeholder="Doc ID" style="padding: 5px; width: 25%;">
-        <button (click)="cadastrarPessoa()" style="cursor:pointer;">+ Pessoa</button>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input [(ngModel)]="novaPessoa.nomePessoa" placeholder="Nome do Paciente" style="padding: 5px; flex: 1;">
+        <button (click)="cadastrarPessoa()" style="cursor:pointer; padding: 6px 12px;">+ Pessoa</button>
         
-        <input [(ngModel)]="novaVacina.nomeVacina" placeholder="Nova Vacina" style="padding: 5px; width: 30%; margin-left: 10px;">
-        <button (click)="cadastrarVacina()" style="cursor:pointer;">+ Vacina</button>
+        <span style="border-left: 1px solid #ccc; height: 25px; margin: 0 5px;"></span>
+
+        <input [(ngModel)]="novaVacina.nomeVacina" placeholder="Nova Vacina" style="padding: 5px; flex: 1;">
+        <button (click)="cadastrarVacina()" style="cursor:pointer; padding: 6px 12px;">+ Vacina</button>
       </div>
     </div>
   </div>
@@ -41,11 +51,11 @@
           <input type="text" [value]="pessoaSelecionada ? pessoaSelecionada.nomePessoa : 'NENHUM PACIENTE SELECIONADO'" readonly
                  style="width: 85%; padding: 4px 8px; background: #ebebeb; border: 1px solid #ccc; color: #333; font-weight: bold;">
         </div>
-        <div style="flex: 0.5;">
+        <!--<div style="flex: 0.5;">
           <label style="color: #444;">ID Doc: </label>
           <input type="text" [value]="pessoaSelecionada ? pessoaSelecionada.numeroIdentificacao : '-'" readonly
                  style="width: 60%; padding: 4px 8px; background: #ebebeb; border: 1px solid #ccc; text-align: center;">
-        </div>
+        </div>-->
         <div style="flex: 0.8;">
           <label style="color: #444;">Status: </label>
           <span [style.color]="pessoaSelecionada ? 'green' : 'red'" style="font-weight: bold;">
@@ -56,11 +66,8 @@
     </div>
 
     <div style="display: flex; background: #e8e8e8; padding-left: 15px; border-bottom: 1px solid #cccccc; gap: 4px;">
-      <div style="background: white; padding: 8px 16px; border: 1px solid #cccccc; border-bottom: transparent; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 13px; color: #333; cursor: pointer;">
+      <div style="background: white; padding: 8px 16px; border: 1px solid #cccccc; border-bottom: transparent; border-top-left-radius: 4px; border-top-right-radius: 4px; font-weight: bold; font-size: 13px; color: #333;">
         Carteira Nacional de Vacinação
-      </div>
-      <div style="padding: 8px 16px; color: #777; font-size: 13px; font-weight: bold; cursor: not-allowed; background: #dfdfdf; border: 1px solid #ccc; border-bottom: transparent;">
-        Outras Vacinas
       </div>
     </div>
 
@@ -72,8 +79,13 @@
               Vacinas<br><hr style="border:0; border-top:1px solid #a0a0a0; margin:4px 0;"><span style="color:#004080;">Doses</span>
             </th>
             
-            <th *ngFor="let v of vacinas" style="border: 1px solid #a0a0a0; background: #fffebd; padding: 10px; text-align: center; font-size: 11px; font-weight: bold; color: #333; min-width: 100px; text-transform: uppercase;">
-              {{ v.nomeVacina }}
+            <th *ngFor="let v of vacinas" style="border: 1px solid #a0a0a0; background: #fffebd; padding: 10px; text-align: center; font-size: 11px; font-weight: bold; color: #333; min-width: 120px; text-transform: uppercase; position: relative;">
+              <div>{{ v.nomeVacina }}</div>
+              <button (click)="removerDoseNaGrade(v.idVacina!)" 
+                      style="background: transparent; border: none; color: #c0392b; cursor: pointer; font-size: 10px; margin-top: 4px; text-decoration: underline;"
+                      title="Excluir esta vacina definitivamente do sistema">
+                Excluir Vacina
+              </button>
             </th>
 
             <th *ngIf="vacinas.length === 0" style="border: 1px solid #a0a0a0; background: #fffbeb; padding: 10px; color: #999; font-style: italic;">
@@ -95,13 +107,13 @@
 
               <div *ngIf="pessoaSelecionada" style="width:100%; height:100%;">
                 
-                <div *ngIf="obterStatusDose(v.nomeVacina, dose).aplicado as status" 
+                <div *ngIf="obterStatusDose(v.nomeVacina, dose).aplicado" 
                      style="background: #ffffff; color: #27ae60; font-weight: bold; font-size: 12px; padding: 8px 2px; border-radius: 4px;">
                   <span>✓ Aplicado</span>
                   <br>
                   <button (click)="removerDoseNaGrade(obterStatusDose(v.nomeVacina, dose).idLog!)" 
                           style="background: none; border: none; color: #c0392b; font-size: 10px; text-decoration: underline; cursor: pointer; margin-top: 4px;">
-                    Desfazer
+                    Remover Registro
                   </button>
                 </div>
 

@@ -45,6 +45,7 @@ public class PessoaController : ControllerBase
             return NotFound("Pessoa não encontrada");
         }
         _context.Vacinacoes.RemoveRange(pessoa.Vacinacoes);
+        
         _context.Pessoas.Remove(pessoa);
 
         await _context.SaveChangesAsync();
