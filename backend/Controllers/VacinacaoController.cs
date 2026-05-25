@@ -16,7 +16,7 @@ public class VacinacaoController : ControllerBase
         _context = context;
     }
 
-    [HttpGet("pessoa/{pessoaId}")]
+    [HttpGet("vacinacao/{pessoaId}")]
     public async Task<IActionResult> GetCartao(int pessoaId)
     {
         // Busca as vacinações e já traz os nomes das vacinas projetados

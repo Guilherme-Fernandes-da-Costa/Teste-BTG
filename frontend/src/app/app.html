@@ -118,7 +118,7 @@
                 </div>
 
                 <div *ngIf="!obterStatusDose(v.nomeVacina, dose).aplicado" style="height: 100%; display: flex; align-items: center; justify-content: center;">
-                  <button (click)="adicionarDoseNaGrade(v.idVacina!, dose)"
+                  <button (click)="adicionarDoseNaGrade(v.idVacina!, v.nomeVacina, dose)"
                           title="Clique para registrar esta aplicação"
                           style="background: #fdfdfd; border: 1px dashed #bbb; color: #999; width: 90%; height: 80%; cursor: pointer; border-radius: 4px; font-size: 11px; transition: 0.2s;"
                           onmouseover="this.style.background='#eaf2ff'; this.style.color='#004080';"

@@ -17,14 +17,14 @@ export class App implements OnInit {
   pessoas: Pessoa[] = [];
   vacinas: Vacina[] = [];
   vacinacoesPessoa: Vacinacao[] = [];
-
+  pessoaSelecionada: any = null;
+  historicoVacinacao: Vacinacao[] = [];
 
   // Modelos de Cadastro Auxiliares
   novaPessoa: Pessoa = { nomePessoa: '', numeroIdentificacao: '' };
   novaVacina: Vacina = { nomeVacina: '' };
   registrarDose = { vacinaId: 0, doseNome: '' };
 
-  pessoaSelecionada: any = null;
 
   listaDoses: string[] = [
     'Tipo 1ª Dose',
@@ -95,11 +95,21 @@ export class App implements OnInit {
   carregarCartao(pessoaId: number) {
     if(!pessoaId) return;
 
-    this.vacinacaoService.consultarCartao(pessoaId).subscribe(res => this.vacinacoesPessoa = res);
+    this.vacinacaoService.consultarCartao(pessoaId).subscribe(
+    {
+      next: (historico) => {
+        this.historicoVacinacao = historico || []; 
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => {
+        console.error('Erro ao carregar cartão:', err);
+        this.historicoVacinacao = [];
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   obterStatusDose(vacinaNome: string, doseNome: string): { aplicado: boolean; idLog?: number } {
-    // Ignoro maiúsculas/minúsculas e espaços
     const registro = this.vacinacoesPessoa.find(v => 
       v.vacinaNome?.toLowerCase().trim() === vacinaNome.toLowerCase().trim() &&
       v.dose.toLowerCase().trim() === doseNome.toLowerCase().trim()
@@ -111,9 +121,26 @@ export class App implements OnInit {
     return { aplicado: false };
   }
 
-  adicionarDoseNaGrade(vacinaId: number, doseNome: string) {
-    if (!this.pessoaSelecionada) return;
+  adicionarDoseNaGrade(vacinaId: number, vacinaNome: string, doseNome: string) {
+    if (!this.pessoaSelecionada) {
+      alert('Selecione um paciente para registrar a vacinação.');
+      return;
+    }
     
+    const ordemDoses = ['Tipo 1ª Dose', 'Tipo 2ª Dose', 'Tipo 3ª Dose', 'Tipo 1º Reforço', 'Tipo 2º Reforço'];
+    const indiceAtual = ordemDoses.indexOf(doseNome);
+    
+    for (let i = 0; i < indiceAtual; i++) {
+      const doseAnterior = ordemDoses[i];
+      const statusAnterior = this.obterStatusDose(doseNome, doseAnterior);
+      
+      if (!statusAnterior.aplicado) {
+        // Se alguma dose anterior estiver faltando, exibe o pop-up de aviso e bloqueia o registro
+        alert(`Atenção: Não é possível registrar a "${vacinaNome}". O paciente precisa receber primeiro a "${doseAnterior}" desta vacina.`);
+        return;
+      }
+    }
+
     const DTO: Vacinacao = {
       id: 0,
       pessoaId: this.pessoaSelecionada.idPessoa || 0,
