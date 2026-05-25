@@ -9,9 +9,9 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<Pessoa> Users { get; set; }
-    public DbSet<Vacina> Chats { get; set; }
-    public DbSet<Cartao> Messages { get; set; }
+    public DbSet<Pessoa> Pessoas { get; set; }
+    public DbSet<Vacina> Vacinas { get; set; }
+    public DbSet<Vacinacao> Vacinassoes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

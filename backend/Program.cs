@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configura o Banco de Dados em Memória
+//banco de dados em memória
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("CartaoVacunacaoDb"));
 

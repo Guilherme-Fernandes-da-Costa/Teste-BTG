@@ -10,4 +10,7 @@ public class Pessoa
     [Required]
     [StringLength(100)]
     public string NomePessoa { get; set; }
+
+    //a representação da classe não tem esse atributo, mas é necessário na aplicacao (ver como explicar melhor o meu pensamento no README)
+    public List<Vacinacao> Vacinassoes { get; set; } = new List<Vacinacao>();
 }
