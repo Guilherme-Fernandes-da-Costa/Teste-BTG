@@ -16,6 +16,25 @@ public class VacinacaoController : ControllerBase
         _context = context;
     }
 
+    [HttpGet("pessoa/{pessoaId}")]
+    public async Task<IActionResult> GetCartao(int pessoaId)
+    {
+        // Busca as vacinações e já traz os nomes das vacinas projetados
+        var historico = await _context.Vacinacoes
+            .Where(v => v.IdPessoa == pessoaId)
+            .Select(v => new {
+                id = v.IdCartao,
+                idPessoa = v.IdPessoa,
+                idVacina = v.IdVacina,
+                vacinaNome = _context.Vacinas.Where(vac => vac.IdVacina == v.IdVacina).Select(vac => vac.NomeVacina).FirstOrDefault(),
+                dose = v.Dose,
+                dataAplicacao = v.DataAplicacao 
+            })
+            .ToListAsync();
+
+        return Ok(historico);
+    }
+
     [HttpPost]
     public async Task<ActionResult<Vacinacao>> RegistrarVacinacao(Vacinacao Vacinacao)
     {
@@ -43,5 +62,20 @@ public class VacinacaoController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(Vacinacao);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> ExcluirRegistro(int id)
+    {
+        var registro = await _context.Vacinacoes.FindAsync(id);
+        if (registro == null)
+        {
+            return NotFound("Registro de vacinação não encontrado");
+        }
+
+        _context.Vacinacoes.Remove(registro);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 }

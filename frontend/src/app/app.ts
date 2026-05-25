@@ -79,9 +79,8 @@ export class App implements OnInit {
     this.vacinacaoService.consultarCartao(pessoaId).subscribe(res => this.vacinacoesPessoa = res);
   }
 
-  // Método crucial: Checa se a pessoa tem a vacina X na dose Y aplicada
   obterStatusDose(vacinaNome: string, doseNome: string): { aplicado: boolean; idLog?: number } {
-    // Tratamento para ignorar maiúsculas/minúsculas e espaços
+    // Ignoro maiúsculas/minúsculas e espaços
     const registro = this.vacinacoesPessoa.find(v => 
       v.vacinaNome?.toLowerCase().trim() === vacinaNome.toLowerCase().trim() &&
       v.dose.toLowerCase().trim() === doseNome.toLowerCase().trim()
