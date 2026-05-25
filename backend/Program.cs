@@ -21,6 +21,8 @@ builder.Services.AddCors(options =>
 // 3. Adiciona o suporte para Controllers
 builder.Services.AddControllers();
 
+builder.Services.AddOpenApi();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

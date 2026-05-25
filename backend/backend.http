@@ -4,3 +4,10 @@ GET {{backend_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST http://localhost:5272/api/vacina
+Content-Type: application/json
+
+{
+  "nomeVacina": "Tríplice Viral - teste"
+}
