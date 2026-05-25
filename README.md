@@ -3,25 +3,26 @@
 Esse repositório tem como proposito ser a entrega do desafio técnica para o processo\
 seletivo para posição Estiário(a) de Software .NET/Java | BTG Empresas no BTG Pactual\
 \
-*Requisitos*
+**Requisitos**
  link de acesso aos requisitos: [aqui](https://gist.github.com/DouglasLutz/aa25728e3a438dc966490870f03cc770/)
 
-*Decisões de projetos:*
+**Decisões de projetos:**
+    - BackEnd: C#, .NET (10.0.107)
+    - FrontEnd: Angular
+    - Banco de Dados: In Memory
 
-- Modelo MER:<br>
-- Os dados seram armazenados em memória cash
-- bibliotecas usadas:
-    - 
-    -
-    -
-    -
-    -
+**Como executar**
+Abra um terminal no src desse repositório e execute:
+~~~
+cd ./backend/
+dotnet restore
+dotnet run
+~~~
 
-*Link de referencias*<br>
- abaixo estão os link dos locais onde tirei informação para o desenvolvimento desse desafio:
-- link 1
-- link 2
-- link 3
-- link 4   
+Em outro terminal, execute:
+~~~
+cd ./frontend/
+npm install && ng serve
+~~~
 
-
+Abre o navegador em http://localhost:4200 para ver a aplicação
