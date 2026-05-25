@@ -16,15 +16,13 @@ export class App implements OnInit {
   // Dados do BD
   pessoas: Pessoa[] = [];
   vacinas: Vacina[] = [];
-  vacinacoesPessoa: Vacinacao[] = [];
   pessoaSelecionada: any = null;
-  historicoVacinacao: Vacinacao[] = [];
+  historicoVacinacao: any[] = []; // Unificado para gerenciar o cartão e o status visual
 
   // Modelos de Cadastro Auxiliares
   novaPessoa: Pessoa = { nomePessoa: '', numeroIdentificacao: '' };
   novaVacina: Vacina = { nomeVacina: '' };
   registrarDose = { vacinaId: 0, doseNome: '' };
-
 
   listaDoses: string[] = [
     'Tipo 1ª Dose',
@@ -61,7 +59,6 @@ export class App implements OnInit {
     this.pessoaService.cadastrarPessoa(this.novaPessoa).subscribe({
       next: () => {
         this.novaPessoa = { nomePessoa: '', numeroIdentificacao: '' };
-        
         this.carregarDados();
         alert("Paciente cadastrado com sucesso!");
       },
@@ -77,7 +74,6 @@ export class App implements OnInit {
     this.vacinaService.cadastrarVacina(this.novaVacina).subscribe({
       next: () => {
         this.novaVacina = { nomeVacina: '' };
-        
         this.carregarDados();
         alert("Vacina adicionada ao catálogo com sucesso!");
       },
@@ -88,16 +84,16 @@ export class App implements OnInit {
   selecionarPessoa(pessoa: Pessoa) {
     if(!pessoa) return;
     this.pessoaSelecionada = pessoa;
-    // this.historicoVacinacao = [];
+    this.historicoVacinacao = []; // Reseta o histórico anterior para evitar fantasmas visuais
     this.carregarCartao(pessoa.idPessoa || 0);
   }
 
   carregarCartao(pessoaId: number) {
     if(!pessoaId) return;
 
-    this.vacinacaoService.consultarCartao(pessoaId).subscribe(
-    {
+    this.vacinacaoService.consultarCartao(pessoaId).subscribe({
       next: (historico) => {
+        // Alimenta o array usado globalmente pela tabela matricial
         this.historicoVacinacao = historico || []; 
         this.cdr.detectChanges(); 
       },
@@ -110,9 +106,12 @@ export class App implements OnInit {
   }
 
   obterStatusDose(vacinaNome: string, doseNome: string): { aplicado: boolean; idLog?: number } {
-    const registro = this.vacinacoesPessoa.find(v => 
-      v.vacinaNome?.toLowerCase().trim() === vacinaNome.toLowerCase().trim() &&
-      v.dose.toLowerCase().trim() === doseNome.toLowerCase().trim()
+    if (!this.historicoVacinacao) return { aplicado: false };
+
+    // Correção: Agora varre a variável correta (historicoVacinacao) que vem preenchida do banco
+    const registro = this.historicoVacinacao.find(v => 
+      v.nomeVacina?.toLowerCase().trim() === vacinaNome.toLowerCase().trim() &&
+      v.dose?.toLowerCase().trim() === doseNome.toLowerCase().trim()
     );
 
     if (registro) {
@@ -132,44 +131,64 @@ export class App implements OnInit {
     
     for (let i = 0; i < indiceAtual; i++) {
       const doseAnterior = ordemDoses[i];
-      const statusAnterior = this.obterStatusDose(doseNome, doseAnterior);
+      // Correção: Passando vacinaNome em vez de doseNome para validar corretamente
+      const statusAnterior = this.obterStatusDose(vacinaNome, doseAnterior);
       
-      if (!statusAnterior.aplicado) {
-        // Se alguma dose anterior estiver faltando, exibe o pop-up de aviso e bloqueia o registro
-        alert(`Atenção: Não é possível registrar a "${vacinaNome}". O paciente precisa receber primeiro a "${doseAnterior}" desta vacina.`);
+      if (!statusAnterior || !statusAnterior.aplicado) {
+        alert(`🚨 Atenção: Não é possível registrar a "${doseNome}". O paciente precisa receber primeiro a "${doseAnterior}" desta vacina.`);
         return;
       }
     }
 
-    const DTO: Vacinacao = {
+    // Correção: Propriedades renomeadas para bater estritamente com os tipos 'int' requeridos pelo C# (idPessoa e idVacina)
+    const DTO: any = {
       id: 0,
-      pessoaId: this.pessoaSelecionada.idPessoa || 0,
-      vacinaId: vacinaId,
+      idPessoa: Number(this.pessoaSelecionada.idPessoa || 0),
+      idVacina: Number(vacinaId),
       dose: doseNome.trim()
     };
 
     this.vacinacaoService.registrarVacinacao(DTO).subscribe({
-      next: () => this.carregarCartao(this.pessoaSelecionada!.idPessoa || 0),
-      error: (err) => alert(err.error || 'Erro ao aplicar dose.')
+      next: () => {
+        // Força a atualização do histórico para renderizar o quadrado cinza imediatamente
+        this.carregarCartao(this.pessoaSelecionada.idPessoa || 0);
+      },
+      error: (err) => {
+        console.error('Erro retornado pela API C#:', err);
+        const mensagemErro = err.error?.title || err.error?.message || JSON.stringify(err.error) || err.message;
+        alert('Erro ao aplicar dose: ' + mensagemErro);
+      }
     });
   }
 
   removerDoseNaGrade(idLog: number) {
     if (confirm('Deseja remover o registro desta dose?')) {
-      this.vacinacaoService.excluirRegistro(idLog).subscribe(() => {
-        this.carregarCartao(this.pessoaSelecionada!.idPessoa || 0);
-      });
+      this.vacinacaoService.excluirRegistro(idLog).subscribe({
+          next: () => {
+            alert("Registro de vacinação removido.");
+            this.carregarCartao(this.pessoaSelecionada.idPessoa);
+          },
+          error: (err) => {
+            console.error("Erro ao excluir dose:", err);
+            alert("Não foi possível remover este registro.");
+          }
+        });
     }
   }
+
   removerPacienteAtual(){
     if (!this.pessoaSelecionada) return;
 
     if (confirm(`Deseja remover o paciente ${this.pessoaSelecionada.nomePessoa}?`)) {
-      this.pessoaService.removerPessoa(this.pessoaSelecionada.idPessoa || 0).subscribe(() => {
-        this.pessoaSelecionada = undefined;
-        this.vacinacoesPessoa = [];
-        this.carregarDados();
-        this.cdr.detectChanges();
+      this.pessoaService.removerPessoa(this.pessoaSelecionada.idPessoa || 0).subscribe({
+        next: () => {
+          this.pessoaSelecionada = null;
+          this.historicoVacinacao = [];
+          this.carregarDados();
+          this.cdr.detectChanges();
+          alert("Paciente removido com sucesso!");
+        },
+        error: (err) => alert("Erro ao remover paciente.")
       });
     }
   }

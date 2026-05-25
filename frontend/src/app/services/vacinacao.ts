@@ -15,7 +15,7 @@ export interface Vacinacao {
   providedIn: 'root'
 })
 export class VacinacaoService {
-  private apiUrl = 'http://localhost:5272/api/Vacinacao';
+  private apiUrl = 'http://localhost:5272/api/vacinacao';
 
   constructor(private http: HttpClient) { }
 

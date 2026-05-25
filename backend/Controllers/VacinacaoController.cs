@@ -19,7 +19,6 @@ public class VacinacaoController : ControllerBase
     [HttpGet("vacinacao/{pessoaId}")]
     public async Task<IActionResult> GetCartao(int pessoaId)
     {
-        // Busca as vacinações e já traz os nomes das vacinas projetados
         var historico = await _context.Vacinacoes
             .Where(v => v.IdPessoa == pessoaId)
             .Select(v => new {
@@ -36,32 +35,41 @@ public class VacinacaoController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Vacinacao>> RegistrarVacinacao(Vacinacao Vacinacao)
+    public async Task<ActionResult<Vacinacao>> RegistrarVacinacao(Vacinacao novaVacinacao)
     {
-        var pessoaExistente = await _context.Pessoas.AnyAsync(p => p.IdPessoa == Vacinacao.IdPessoa);
-        if (!pessoaExistente)
+        // var pessoaExistente = await _context.Pessoas.AnyAsync(p => p.IdPessoa == Vacinacao.IdPessoa);
+        // if (!pessoaExistente)
+        // {
+        //     return BadRequest("Pessoa não encontrada");
+        // }
+
+        // var vacinaExistente = await _context.Vacinas.AnyAsync(v => v.IdVacina == Vacinacao.IdVacina);
+        // if (!vacinaExistente)
+        // {
+        //     return BadRequest("Vacina não encontrada");
+        // }
+
+        // var doseDuplicada = await _context.Vacinacoes
+        //     .AnyAsync(c => c.IdPessoa == Vacinacao.IdPessoa && c.IdVacina == Vacinacao.IdVacina && c.Dose == Vacinacao.Dose);
+
+        // if (doseDuplicada)
+        // {
+        //     return BadRequest("Dose já registrada para esta pessoa e vacina");
+        // }
+
+        // _context.Vacinacoes.Add(Vacinacao);
+        // await _context.SaveChangesAsync();
+
+        // return Ok(Vacinacao);
+        if (novaVacinacao == null || novaVacinacao.IdPessoa <= 0 || novaVacinacao.IdVacina <= 0)
         {
-            return BadRequest("Pessoa não encontrada");
+            return BadRequest("Dados de vacinação inválidos.");
         }
 
-        var vacinaExistente = await _context.Vacinas.AnyAsync(v => v.IdVacina == Vacinacao.IdVacina);
-        if (!vacinaExistente)
-        {
-            return BadRequest("Vacina não encontrada");
-        }
-
-        var doseDuplicada = await _context.Vacinacoes
-            .AnyAsync(c => c.IdPessoa == Vacinacao.IdPessoa && c.IdVacina == Vacinacao.IdVacina && c.Dose == Vacinacao.Dose);
-
-        if (doseDuplicada)
-        {
-            return BadRequest("Dose já registrada para esta pessoa e vacina");
-        }
-
-        _context.Vacinacoes.Add(Vacinacao);
+        _context.Vacinacoes.Add(novaVacinacao);
         await _context.SaveChangesAsync();
 
-        return Ok(Vacinacao);
+        return CreatedAtAction(nameof(GetCartao), new { idPessoa = novaVacinacao.IdPessoa }, novaVacinacao);    
     }
 
     [HttpDelete("{id}")]
