@@ -6,12 +6,12 @@ seletivo para posição Estiário(a) de Software .NET/Java | BTG Empresas no BTG
 **Requisitos**
  link de acesso aos requisitos: [aqui](https://gist.github.com/DouglasLutz/aa25728e3a438dc966490870f03cc770/)
 
-**Decisões de projetos:**
-    - BackEnd: C#, .NET (10.0.107)
-    - FrontEnd: Angular
-    - Banco de Dados: In Memory
+**Decisões de projetos:** <br>
+    - BackEnd: C#, .NET (10.0.107) <br>
+    - FrontEnd: Angular <br>
+    - Banco de Dados: In Memory <br>
 
-**Como executar**
+**Como executar** <br>
 Abra um terminal no src desse repositório e execute:
 ~~~
 cd ./backend/
